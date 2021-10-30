@@ -49,7 +49,7 @@ public class Main {
 
   class Project {
     private double id;
-    private double client_id;
+    private String client_id;
     private String title;
     private boolean active;
 
@@ -61,11 +61,11 @@ public class Main {
       this.id = id;
     }
 
-    public double getClient_id() {
+    public String getClient_id() {
       return client_id;
     }
 
-    public void setClient_id(double client_id) {
+    public void setClient_id(String client_id) {
       this.client_id = client_id;
     }
 
@@ -113,7 +113,7 @@ public class Main {
               "active boolean NOT NULL" +
               ");");
        */
-      //stmt.executeUpdate("INSERT INTO Project VALUES (1,123,'foo',true)");
+      //stmt.executeUpdate("INSERT INTO Project VALUES (1,'bar','foo',true)");
       ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project");
 
 
@@ -125,7 +125,7 @@ public class Main {
         }
         Project proj = new Project();
         proj.setId(rs.getInt("id"));
-        proj.setClient_id(rs.getInt("client_id"));
+        proj.setClient_id(rs.getString("client_id"));
         proj.setTitle(rs.getString("title"));
         proj.setActive(rs.getBoolean("active"));
 
