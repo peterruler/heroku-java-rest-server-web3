@@ -25,7 +25,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.Arrays;
+import java.util.List;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -34,10 +43,49 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Map;
 
-@Controller
+@RestController
 @SpringBootApplication
 public class Main {
 
+  class Project {
+    private double id;
+    private double client_id;
+    private String title;
+    private boolean active;
+
+    public double getId() {
+      return id;
+    }
+
+    public void setId(double id) {
+      this.id = id;
+    }
+
+    public double getClient_id() {
+      return client_id;
+    }
+
+    public void setClient_id(double client_id) {
+      this.client_id = client_id;
+    }
+
+    public String getTitle() {
+      return title;
+    }
+
+    public void setTitle(String title) {
+      this.title = title;
+    }
+
+    public boolean isActive() {
+      return active;
+    }
+
+    public void setActive(boolean active) {
+      this.active = active;
+    }
+
+  }
   @Value("${spring.datasource.url}")
   private String dbUrl;
 
@@ -53,28 +101,45 @@ public class Main {
     return "index";
   }
 
-  @RequestMapping("/db")
-  String db(Map<String, Object> model) {
+  @GetMapping("/api/projects")
+  List db(Map<String, Object> model) {
+    ArrayList<Project> output = new ArrayList<Project>();
     try (Connection connection = dataSource.getConnection()) {
       Statement stmt = connection.createStatement();
-      stmt.executeUpdate("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)");
-      stmt.executeUpdate("INSERT INTO ticks VALUES (now())");
-      ResultSet rs = stmt.executeQuery("SELECT tick FROM ticks");
+      /*stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Project (" +
+              "id double precision PRIMARY KEY," +
+              "client_id VARCHAR ( 255 ) UNIQUE NOT NULL," +
+              "title VARCHAR ( 255 ) NOT NULL," +
+              "active boolean NOT NULL" +
+              ");");
+       */
+      //stmt.executeUpdate("INSERT INTO Project VALUES (1,123,'foo',true)");
+      ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project");
 
-      ArrayList<String> output = new ArrayList<String>();
-      while (rs.next()) {
-        output.add("Read from DB: " + rs.getTimestamp("tick"));
+
+      while (true) {
+        try {
+          if (!rs.next()) break;
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
+        Project proj = new Project();
+        proj.setId(rs.getInt("id"));
+        proj.setClient_id(rs.getInt("client_id"));
+        proj.setTitle(rs.getString("title"));
+        proj.setActive(rs.getBoolean("active"));
+
+        output.add(proj);
+
+        model.put("records", output);
       }
-
-      model.put("records", output);
-      return "db";
-    } catch (Exception e) {
-      model.put("message", e.getMessage());
-      return "error";
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
     }
+    return output;
   }
 
-  @Bean
+    @Bean
   public DataSource dataSource() throws SQLException {
     if (dbUrl == null || dbUrl.isEmpty()) {
       return new HikariDataSource();
