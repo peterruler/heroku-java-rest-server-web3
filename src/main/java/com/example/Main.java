@@ -33,13 +33,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Arrays;
+import java.awt.*;
+import java.sql.*;
 import java.util.List;
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -99,6 +96,37 @@ public class Main {
   @RequestMapping("/")
   String index() {
     return "index";
+  }
+
+  @PostMapping("/api/projects")
+  String addProject(@RequestBody Map<String, Object> project)   throws Exception {
+    ArrayList<Project> output = new ArrayList<Project>();
+    System.out.println(project);
+    String postSql = "INSERT INTO Project (id, client_id, title, active) VALUES(?,?,?,?)";
+    try (Connection connection = dataSource.getConnection()) {
+      PreparedStatement pstmt = connection.prepareStatement(postSql);
+
+      pstmt.setInt(1, (Integer) project.get("id"));
+      pstmt.setString(2, (String) project.get("client_id"));
+      pstmt.setString(3, (String) project.get("title"));
+      pstmt.setBoolean(4, (Boolean) project.get("active"));
+      pstmt.executeUpdate();
+
+
+
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    }
+    /*
+    Project proj = new Project();
+    proj.setId(id);
+    proj.setClient_id(client_id);
+    proj.setTitle(title);
+    proj.setActive(active);
+    output.add(proj);
+    */
+    return "foo";
+
   }
 
   @GetMapping("/api/projects")
