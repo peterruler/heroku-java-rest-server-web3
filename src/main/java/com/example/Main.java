@@ -37,11 +37,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.net.Inet4Address;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Map;
+import java.sql.Date;
 
 @RestController
 @SpringBootApplication
@@ -98,7 +101,7 @@ public class Main {
         private int project_id;
         private Boolean done;
         private String title;
-        private String due_date;
+        private Date due_date;
         private String priority;
 
 
@@ -142,11 +145,11 @@ public class Main {
             this.title = title;
         }
 
-        public String getDue_date() {
+        public Date getDue_date() {
             return due_date;
         }
 
-        public void setDue_date(String due_date) {
+        public void setDue_date(Date due_date) {
             this.due_date = due_date;
         }
 
@@ -351,7 +354,7 @@ public class Main {
         String client_id = (String) project.get("client_id");
         Object done = project.get("done");
         String title = (String) project.get("title");
-        String due_date = (String) project.get("due_date");
+        Date due_date = new Date((Long) project.get("due_date"));
         String priority = (String) project.get("priority");
 
         String postSql = "INSERT INTO Issue (id, client_id, project_id, done, title, due_date, priority) VALUES(?,?,?,?,?,?,?)";
@@ -362,7 +365,7 @@ public class Main {
             pstmt.setInt(3, project_id);
             pstmt.setBoolean(4, (Boolean) done);
             pstmt.setString(5, title);
-            pstmt.setString(6, due_date);
+            pstmt.setDate(6, due_date);
             pstmt.setString(7, priority);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
@@ -391,27 +394,25 @@ public class Main {
     public String getIssueById(@PathVariable int project_id) {
 
         Issue issue = new Issue();
-        String getSql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE id=? LIMIT 1";
+        String getSql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(getSql);
             pstmt.setInt(1, project_id);
             ResultSet rs = pstmt.executeQuery();
             int id2 = 0;
             String client_id = "";
-            int project_id2 = 0;
             Boolean done = false;
             String title = "";
-            String due_date = "";
+            Date due_date = null;
             String priority = "";
             while (rs.next()) {
                 id2 = rs.getInt("id");
                 client_id = rs.getString("client_id");
-                project_id2 = rs.getInt("project_id");
                 done = rs.getBoolean("done");
                 title = rs.getString("title");
-                due_date = rs.getString("due_date");
+                due_date = rs.getDate("due_date");
                 priority = rs.getString("priority");
-                System.out.println("ROW : id=" + project_id2 + " client_id" + client_id + " project_id" + project_id + " title=" + title + "due_date" + due_date + "priority=" + priority);
+                System.out.println("ROW : id=" + id2 + " client_id" + client_id + " project_id" + project_id + " title=" + title + "due_date" + due_date + "priority=" + priority);
             }
             issue.setId(id2);
             issue.setClient_id(client_id);
@@ -426,6 +427,59 @@ public class Main {
         }
         return "{\"message\":\"error\"}";
     }
+
+    /**
+     * UPDATE Issue
+     */
+
+    @RequestMapping(
+            value = "/api/projects/{project_id}/issues",
+            produces = "application/json",
+            method = {RequestMethod.PUT})
+    List<Issue> updateIssue(@PathVariable int project_id, @RequestBody Map<String, Object> issue_param) throws Exception {
+        ArrayList<Issue> output = new ArrayList<Issue>();
+
+        String id = (String) issue_param.get("id");
+        String client_id = (String) issue_param.get("client_id");
+        String project_id2 = (String) issue_param.get("project_id");
+        String done2 = (String) issue_param.get("done");
+        Boolean done = ("true".equals(done2))? true : false;
+        String title = (String) issue_param.get("title");
+        String due_date = (String) issue_param.get("due_date");
+        String priority = (String) issue_param.get("priority");
+
+        String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement pstmt = connection.prepareStatement(putSql);
+            pstmt.setString(1, client_id);
+            pstmt.setInt(2, Integer.parseInt(project_id2));
+            pstmt.setBoolean(3, done);
+            pstmt.setString(4, title);
+
+            java.util.Date utilStartDate =  new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+            java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
+
+            pstmt.setDate(5, date1);
+
+            pstmt.setString(6, priority);
+            pstmt.setInt(7, project_id);
+            pstmt.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        Issue issue = new Issue();
+        issue.setClient_id(client_id);
+        issue.setProject_id(project_id);
+        issue.setDone((Boolean) done);
+        issue.setTitle(title);
+        java.util.Date utilStartDate =  new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+        java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
+        issue.setDue_date(date1);
+        issue.setPriority(priority);
+        output.add(issue);
+        return output;
+    }
+
 
     @Bean
     public DataSource dataSource() throws SQLException {
