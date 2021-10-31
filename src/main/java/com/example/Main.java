@@ -92,6 +92,78 @@ public class Main {
 
     }
 
+    class Issue {
+        private double id;
+        private String client_id;
+        private String project_id;
+        private Boolean done;
+        private String title;
+        private String due_date;
+        private String priority;
+
+
+        public double getId() {
+            return id;
+        }
+
+        public void setId(double id) {
+            this.id = id;
+        }
+
+        public String getClient_id() {
+            return client_id;
+        }
+
+        public void setClient_id(String client_id) {
+            this.client_id = client_id;
+        }
+
+        public String getProject_id() {
+            return project_id;
+        }
+
+        public void setProject_id(String project_id) {
+            this.project_id = project_id;
+        }
+
+        public Boolean getDone() {
+            return done;
+        }
+
+        public void setDone(Boolean done) {
+            this.done = done;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getDue_date() {
+            return due_date;
+        }
+
+        public void setDue_date(String due_date) {
+            this.due_date = due_date;
+        }
+
+        public String getPriority() {
+            return priority;
+        }
+
+        public void setPriority(String priority) {
+            this.priority = priority;
+        }
+
+        @Override
+        public String toString() {
+            return "{\"id\":\"" + id + "\",\"client_id\":\"" + client_id + "\",\"project_id\":\"" + project_id + "\",\"done\":\"" +done +"\"due_date\":\"" +due_date+"\"title\":\"" + title + "\",\"priority\":\"" + priority + "\"}";
+        }
+
+    }
     @Value("${spring.datasource.url}")
     private String dbUrl;
 
@@ -111,6 +183,9 @@ public class Main {
      * Project Endpoints
      */
 
+    /**
+     * DELETE Project
+     */
     @RequestMapping(
             value = "/api/projects/{id}",
             produces = "application/json",
@@ -129,6 +204,9 @@ public class Main {
         return false;
     }
 
+    /**
+     * UPDATE Project
+     */
     @RequestMapping(
             value = "/api/projects/{id}",
             produces = "application/json",
@@ -160,6 +238,9 @@ public class Main {
         return output;
     }
 
+    /**
+     * CREATE Project
+     */
     @PostMapping("/api/projects")
     List addProject(@RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Project> output = new ArrayList<Project>();
@@ -189,6 +270,9 @@ public class Main {
         return output;
     }
 
+    /**
+     * READ Project BY ID
+     */
     @RequestMapping(
             value = "/api/projects/{id}",
             method = {RequestMethod.GET})
@@ -222,6 +306,9 @@ public class Main {
         return "{\"message\":\"error\"}";
     }
 
+    /**
+     * READ ALL Projects
+     */
     @GetMapping("/api/projects")
     List getAllProjects(Map<String, Object> model) {
         ArrayList<Project> output = new ArrayList<Project>();
@@ -252,6 +339,46 @@ public class Main {
      * ISSUES
      */
 
+    /**
+     * CREATE ISSUE
+     */
+    @PostMapping("/api/project/{project_id}/issues")
+    List createIssue(@PathVariable String project_id, @RequestBody Map<String, Object> project) throws Exception {
+        ArrayList<Issue> output = new ArrayList<Issue>();
+
+        int id = (Integer) project.get("id");
+        String client_id = (String) project.get("client_id");
+        Object done = project.get("done");
+        String title = (String) project.get("title");
+        String due_date = (String) project.get("due_date");
+        String priority = (String) project.get("priority");
+
+        String postSql = "INSERT INTO Issue (id, client_id, project_id, done, title, due_date, priority) VALUES(?,?,?,?,?,?,?)";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement pstmt = connection.prepareStatement(postSql);
+            pstmt.setInt(1, id);
+            pstmt.setString(2, client_id);
+            pstmt.setString(3, project_id);
+            pstmt.setBoolean(4, (Boolean) done);
+            pstmt.setString(5, title);
+            pstmt.setString(6, due_date);
+            pstmt.setString(7, priority);
+            pstmt.executeUpdate();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        Issue issue = new Issue();
+        issue.setId(id);
+        issue.setClient_id(client_id);
+        issue.setProject_id(project_id);
+        issue.setDone((Boolean)done);
+        issue.setProject_id(title);
+        issue.setDue_date(due_date);
+        issue.setPriority(priority);
+
+        output.add(issue);
+        return output;
+    }
 
 
     @Bean
