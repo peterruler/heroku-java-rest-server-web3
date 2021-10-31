@@ -336,22 +336,26 @@ public class Main {
     List createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
-        int id = (Integer) project.get("id");
+        Double id = Double.parseDouble((String) project.get("id"));
         String client_id = (String) project.get("client_id");
-        Object done = project.get("done");
+        String done2 = (String) project.get("done");
+        Boolean done = ("true".equals(done2)) ? true : false;
         String title = (String) project.get("title");
-        Date due_date = new Date((Long) project.get("due_date"));
+        String due_date = (String) project.get("due_date");
         String priority = (String) project.get("priority");
 
-        String postSql = "INSERT INTO Issue (id, client_id, project_id, done, title, due_date, priority) VALUES(?,?,?,?,?,?,?)";
+        String postSql = "INSERT INTO Issue (id, client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?,?)";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
-            pstmt.setInt(1, id);
+            pstmt.setDouble(1, id);
             pstmt.setString(2, client_id);
-            pstmt.setInt(3, project_id);
-            pstmt.setBoolean(4, (Boolean) done);
+            pstmt.setDouble(3, project_id);
+            pstmt.setBoolean(4, done);
             pstmt.setString(5, title);
-            pstmt.setDate(6, due_date);
+            java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+            java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
+            pstmt.setDate(6, date1);
+
             pstmt.setString(7, priority);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
@@ -363,7 +367,10 @@ public class Main {
         issue.setProject_id(project_id);
         issue.setDone((Boolean) done);
         issue.setTitle(title);
-        issue.setDue_date(due_date);
+        java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+        java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
+        issue.setDue_date(date1);
+
         issue.setPriority(priority);
 
         output.add(issue);
@@ -425,30 +432,28 @@ public class Main {
     List<Issue> updateIssue(@PathVariable int project_id, @RequestBody Map<String, Object> issue_param) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
-        String id = (String) issue_param.get("id");
         String client_id = (String) issue_param.get("client_id");
-        String project_id2 = (String) issue_param.get("project_id");
         String done2 = (String) issue_param.get("done");
-        Boolean done = ("true".equals(done2))? true : false;
+        Boolean done = ("true".equals(done2)) ? true : false;
         String title = (String) issue_param.get("title");
         String due_date = (String) issue_param.get("due_date");
         String priority = (String) issue_param.get("priority");
 
-        String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=?";
+        String putSql = "UPDATE Issue SET done=?, title=?, due_date=?, priority=? WHERE project_id=?";
+
+        //String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
-            pstmt.setString(1, client_id);
-            pstmt.setInt(2, Integer.parseInt(project_id2));
-            pstmt.setBoolean(3, done);
-            pstmt.setString(4, title);
-
-            java.util.Date utilStartDate =  new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+            //pstmt.setString(1, client_id);
+            //pstmt.setInt(2, Integer.parseInt(project_id2));
+            pstmt.setBoolean(1, done);
+            pstmt.setString(2, title);
+            java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
             java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
+            pstmt.setDate(3, date1);
 
-            pstmt.setDate(5, date1);
-
-            pstmt.setString(6, priority);
-            pstmt.setInt(7, project_id);
+            pstmt.setString(4, priority);
+            pstmt.setInt(5, project_id);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -458,9 +463,10 @@ public class Main {
         issue.setProject_id(project_id);
         issue.setDone((Boolean) done);
         issue.setTitle(title);
-        java.util.Date utilStartDate =  new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+        java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
         java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
         issue.setDue_date(date1);
+
         issue.setPriority(priority);
         output.add(issue);
         return output;
