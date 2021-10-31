@@ -16,6 +16,7 @@
 
 package com.example;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
-import java.awt.*;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PathVariable;
 import java.sql.*;
 import java.util.List;
 import javax.sql.DataSource;
@@ -48,7 +50,7 @@ public class Main {
     private double id;
     private String client_id;
     private String title;
-    private boolean active;
+    private Object active;
 
     public double getId() {
       return id;
@@ -74,12 +76,16 @@ public class Main {
       this.title = title;
     }
 
-    public boolean isActive() {
+    public Object isActive() {
       return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(Object active) {
       this.active = active;
+    }
+    @Override
+    public String toString() {
+      return "{\"id\":\""+id+"\",\"client_id\":\""+client_id+"\",\"title\":\""+title+"\",\"active\":\""+active+"\"}";
     }
 
   }
@@ -95,56 +101,109 @@ public class Main {
 
   @RequestMapping("/")
   String index() {
-    return "index";
+    return "POST JSON: /api/project & GET: /api/project/{id} & PUT JSON: /api/project & GET: /api/projects";
   }
 
-  @PostMapping("/api/projects")
-  String addProject(@RequestBody Map<String, Object> project)   throws Exception {
+  @RequestMapping(
+          value = "/api/project",
+          produces = "application/json",
+          method = {RequestMethod.PUT})
+  List<Project> updateProject(@RequestBody Map<String, Object> project)   throws Exception {
     ArrayList<Project> output = new ArrayList<Project>();
-    System.out.println(project);
-    String postSql = "INSERT INTO Project (id, client_id, title, active) VALUES(?,?,?,?)";
+
+    int id = (Integer) project.get("id");
+    String client_id = (String) project.get("client_id");
+    String title = (String) project.get("title");
+    Object active = project.get("active");
+
+    String putSql = "UPDATE Project SET client_id=?, title=?, active=? WHERE id=?";
     try (Connection connection = dataSource.getConnection()) {
-      PreparedStatement pstmt = connection.prepareStatement(postSql);
-
-      pstmt.setInt(1, (Integer) project.get("id"));
-      pstmt.setString(2, (String) project.get("client_id"));
-      pstmt.setString(3, (String) project.get("title"));
-      pstmt.setBoolean(4, (Boolean) project.get("active"));
+      PreparedStatement pstmt = connection.prepareStatement(putSql);
+      pstmt.setString(1, client_id);
+      pstmt.setString(2, title);
+      pstmt.setBoolean(3, (Boolean) active);
+      pstmt.setInt(4, id);
       pstmt.executeUpdate();
-
-
-
     } catch (SQLException throwables) {
       throwables.printStackTrace();
     }
-    /*
     Project proj = new Project();
     proj.setId(id);
     proj.setClient_id(client_id);
     proj.setTitle(title);
-    proj.setActive(active);
+    proj.setActive((Boolean)active);
     output.add(proj);
-    */
-    return "foo";
+    return output;
+  }
 
+  @PostMapping("/api/projects")
+  List addProject(@RequestBody Map<String, Object> project)   throws Exception {
+    ArrayList<Project> output = new ArrayList<Project>();
+
+    int id = (Integer) project.get("id");
+    String client_id = (String) project.get("client_id");
+    String title = (String) project.get("title");
+    Object active = project.get("active");
+
+    String postSql = "INSERT INTO Project (id, client_id, title, active) VALUES(?,?,?,?)";
+    try (Connection connection = dataSource.getConnection()) {
+      PreparedStatement pstmt = connection.prepareStatement(postSql);
+      pstmt.setInt(1, id);
+      pstmt.setString(2, client_id);
+      pstmt.setString(3, title);
+      pstmt.setBoolean(4, (Boolean) active);
+      pstmt.executeUpdate();
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    }
+    Project proj = new Project();
+    proj.setId(id);
+    proj.setClient_id(client_id);
+    proj.setTitle(title);
+    proj.setActive((Boolean)active);
+    output.add(proj);
+    return output;
+  }
+
+  @RequestMapping(
+          value = "/api/project/{id}",
+          method = {RequestMethod.GET})
+  public String getProjectById(@PathVariable int id) {
+
+    Project proj = new Project();
+    String getSql = "SELECT id, client_id, title, active FROM Project WHERE id=? LIMIT 1";
+    try (Connection connection = dataSource.getConnection()) {
+      PreparedStatement pstmt = connection.prepareStatement(getSql);
+      pstmt.setInt(1, id);
+      ResultSet rs = pstmt.executeQuery();
+      int id2 = 0;
+      String client_id = "";
+      String title = "";
+      Boolean active = false;
+      while (rs.next()) {
+        id2 = rs.getInt("id");
+        client_id = rs.getString("client_id");
+        title = rs.getString("title");
+        active = rs.getBoolean("active");
+        //System.out.println("ROW : id=" + id + " client_id" + client_id + " title=" + title + "active=" + active);
+      }
+      proj.setId(id2);
+      proj.setClient_id(client_id);
+      proj.setTitle(title);
+      proj.setActive(active);
+      return proj.toString();
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    }
+    return "{\"message\":\"error\"}";
   }
 
   @GetMapping("/api/projects")
-  List db(Map<String, Object> model) {
+  List getAllProjects(Map<String, Object> model) {
     ArrayList<Project> output = new ArrayList<Project>();
     try (Connection connection = dataSource.getConnection()) {
       Statement stmt = connection.createStatement();
-      /*stmt.executeUpdate("CREATE TABLE IF NOT EXISTS Project (" +
-              "id double precision PRIMARY KEY," +
-              "client_id VARCHAR ( 255 ) UNIQUE NOT NULL," +
-              "title VARCHAR ( 255 ) NOT NULL," +
-              "active boolean NOT NULL" +
-              ");");
-       */
-      //stmt.executeUpdate("INSERT INTO Project VALUES (1,'bar','foo',true)");
       ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project");
-
-
       while (true) {
         try {
           if (!rs.next()) break;
@@ -156,9 +215,7 @@ public class Main {
         proj.setClient_id(rs.getString("client_id"));
         proj.setTitle(rs.getString("title"));
         proj.setActive(rs.getBoolean("active"));
-
         output.add(proj);
-
         model.put("records", output);
       }
     } catch (SQLException throwables) {
