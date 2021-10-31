@@ -95,7 +95,7 @@ public class Main {
     class Issue {
         private double id;
         private String client_id;
-        private String project_id;
+        private int project_id;
         private Boolean done;
         private String title;
         private String due_date;
@@ -118,11 +118,11 @@ public class Main {
             this.client_id = client_id;
         }
 
-        public String getProject_id() {
+        public int getProject_id() {
             return project_id;
         }
 
-        public void setProject_id(String project_id) {
+        public void setProject_id(int project_id) {
             this.project_id = project_id;
         }
 
@@ -160,10 +160,11 @@ public class Main {
 
         @Override
         public String toString() {
-            return "{\"id\":\"" + id + "\",\"client_id\":\"" + client_id + "\",\"project_id\":\"" + project_id + "\",\"done\":\"" +done +"\"due_date\":\"" +due_date+"\"title\":\"" + title + "\",\"priority\":\"" + priority + "\"}";
+            return "{\"id\":\"" + id + "\",\"client_id\":\"" + client_id + "\",\"project_id\":\"" + project_id + "\",\"done\":\"" + done + "\",\"due_date\":\"" + due_date + "\",\"title\":\"" + title + "\",\"priority\":\"" + priority + "\"}";
         }
 
     }
+
     @Value("${spring.datasource.url}")
     private String dbUrl;
 
@@ -343,7 +344,7 @@ public class Main {
      * CREATE ISSUE
      */
     @PostMapping("/api/project/{project_id}/issues")
-    List createIssue(@PathVariable String project_id, @RequestBody Map<String, Object> project) throws Exception {
+    List createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
         int id = (Integer) project.get("id");
@@ -358,7 +359,7 @@ public class Main {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
             pstmt.setInt(1, id);
             pstmt.setString(2, client_id);
-            pstmt.setString(3, project_id);
+            pstmt.setInt(3, project_id);
             pstmt.setBoolean(4, (Boolean) done);
             pstmt.setString(5, title);
             pstmt.setString(6, due_date);
@@ -371,8 +372,8 @@ public class Main {
         issue.setId(id);
         issue.setClient_id(client_id);
         issue.setProject_id(project_id);
-        issue.setDone((Boolean)done);
-        issue.setProject_id(title);
+        issue.setDone((Boolean) done);
+        issue.setTitle(title);
         issue.setDue_date(due_date);
         issue.setPriority(priority);
 
@@ -380,6 +381,51 @@ public class Main {
         return output;
     }
 
+    /**
+     * GET Issue
+     */
+
+    @RequestMapping(
+            value = "/api/project/{project_id}/issues",
+            method = {RequestMethod.GET})
+    public String getIssueById(@PathVariable int project_id) {
+
+        Issue issue = new Issue();
+        String getSql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE id=? LIMIT 1";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement pstmt = connection.prepareStatement(getSql);
+            pstmt.setInt(1, project_id);
+            ResultSet rs = pstmt.executeQuery();
+            int id2 = 0;
+            String client_id = "";
+            int project_id2 = 0;
+            Boolean done = false;
+            String title = "";
+            String due_date = "";
+            String priority = "";
+            while (rs.next()) {
+                id2 = rs.getInt("id");
+                client_id = rs.getString("client_id");
+                project_id2 = rs.getInt("project_id");
+                done = rs.getBoolean("done");
+                title = rs.getString("title");
+                due_date = rs.getString("due_date");
+                priority = rs.getString("priority");
+                System.out.println("ROW : id=" + project_id2 + " client_id" + client_id + " project_id" + project_id + " title=" + title + "due_date" + due_date + "priority=" + priority);
+            }
+            issue.setId(id2);
+            issue.setClient_id(client_id);
+            issue.setProject_id(project_id);
+            issue.setDone(done);
+            issue.setTitle(title);
+            issue.setDue_date(due_date);
+            issue.setPriority(priority);
+            return issue.toString();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return "{\"message\":\"error\"}";
+    }
 
     @Bean
     public DataSource dataSource() throws SQLException {
