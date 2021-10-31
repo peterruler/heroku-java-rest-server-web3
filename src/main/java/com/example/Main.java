@@ -433,7 +433,7 @@ public class Main {
      */
 
     @RequestMapping(
-            value = "/api/projects/{project_id}/issues",
+            value = "/api/project/{project_id}/issues",
             produces = "application/json",
             method = {RequestMethod.PUT})
     List<Issue> updateIssue(@PathVariable int project_id, @RequestBody Map<String, Object> issue_param) throws Exception {
