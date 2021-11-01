@@ -239,28 +239,27 @@ public class Main {
     List addProject(@RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Project> output = new ArrayList<Project>();
 
-        int id = (Integer) project.get("id");
         String client_id = (String) project.get("client_id");
         String title = (String) project.get("title");
         Object active = project.get("active");
 
-        String postSql = "INSERT INTO Project (id, client_id, title, active) VALUES(?,?,?,?)";
+        String postSql = "INSERT INTO Project (client_id, title, active) VALUES(?,?,?) RETURNING id";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
-            pstmt.setInt(1, id);
-            pstmt.setString(2, client_id);
-            pstmt.setString(3, title);
-            pstmt.setBoolean(4, (Boolean) active);
-            pstmt.executeUpdate();
+            pstmt.setString(1, client_id);
+            pstmt.setString(2, title);
+            pstmt.setBoolean(3, (Boolean) active);
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+            Project proj = new Project();
+            proj.setId(rs.getInt(1));
+            proj.setClient_id(client_id);
+            proj.setTitle(title);
+            proj.setActive((Boolean) active);
+            output.add(proj);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        Project proj = new Project();
-        proj.setId(id);
-        proj.setClient_id(client_id);
-        proj.setTitle(title);
-        proj.setActive((Boolean) active);
-        output.add(proj);
         return output;
     }
 
@@ -345,43 +344,48 @@ public class Main {
 
         Double id = (Double) project.get("id");
         String client_id = (String) project.get("client_id");
-        //String done2 = (String) project.get("done");
-        //Boolean done = ("true".equals(done2)) ? true : false;
-        Boolean done = (Boolean) project.get("done");
+
+        //if "done":"true" in json instead of "done": true
+        String done2 = (String) project.get("done");
+        Boolean done = ("true".equals(done2)) ? true : false;
+
+        //"done":true
+        //Boolean done = (Boolean) project.get("done");
         String title = (String) project.get("title");
         String due_date = (String) project.get("due_date");
         String priority = (String) project.get("priority");
 
-        String postSql = "INSERT INTO Issue (id, client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?,?)";
+        String postSql = "INSERT INTO Issue (client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?)";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
-            pstmt.setDouble(1, id);
-            pstmt.setString(2, client_id);
-            pstmt.setDouble(3, project_id);
-            pstmt.setBoolean(4, done);
-            pstmt.setString(5, title);
-            java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
-            java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
-            pstmt.setDate(6, date1);
+            pstmt.setString(1, client_id);
+            pstmt.setDouble(2, project_id);
+            pstmt.setBoolean(3, done);
+            pstmt.setString(4, title);
+            java.util.Date utilStartDate1 = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+            java.sql.Date date1 = new java.sql.Date(utilStartDate1.getTime());
+            pstmt.setDate(5, date1);
 
-            pstmt.setString(7, priority);
-            pstmt.executeUpdate();
+            pstmt.setString(6, priority);
+            ResultSet rs = pstmt.executeQuery();
+            rs.next();
+
+            Issue issue = new Issue();
+            issue.setId(rs.getInt(1));
+            issue.setClient_id(client_id);
+            issue.setProject_id(project_id);
+            issue.setDone((Boolean) done);
+            issue.setTitle(title);
+            java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
+            java.sql.Date date2 = new java.sql.Date(utilStartDate.getTime());
+            issue.setDue_date(date2);
+
+            issue.setPriority(priority);
+
+            output.add(issue);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        Issue issue = new Issue();
-        issue.setId(id);
-        issue.setClient_id(client_id);
-        issue.setProject_id(project_id);
-        issue.setDone((Boolean) done);
-        issue.setTitle(title);
-        java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
-        java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
-        issue.setDue_date(date1);
-
-        issue.setPriority(priority);
-
-        output.add(issue);
         return output;
     }
 
@@ -484,7 +488,7 @@ public class Main {
      */
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(
-            value = "/api/projects/{project_id}/issues/{id}",
+            value = "/api/project/{project_id}/issues/{id}",
             produces = "application/json",
             method = {RequestMethod.DELETE})
     boolean deleteIssue(@PathVariable int project_id, @PathVariable int id) throws Exception {
