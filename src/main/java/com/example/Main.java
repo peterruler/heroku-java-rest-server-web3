@@ -439,21 +439,19 @@ public class Main {
         String due_date = (String) issue_param.get("due_date");
         String priority = (String) issue_param.get("priority");
 
-        String putSql = "UPDATE Issue SET done=?, title=?, due_date=?, priority=? WHERE project_id=?";
-
-        //String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=?";
+        String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
-            //pstmt.setString(1, client_id);
-            //pstmt.setInt(2, Integer.parseInt(project_id2));
-            pstmt.setBoolean(1, done);
-            pstmt.setString(2, title);
+            pstmt.setString(1, client_id);
+            pstmt.setDouble(2, project_id);
+            pstmt.setBoolean(3, done);
+            pstmt.setString(4, title);
             java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
             java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
-            pstmt.setDate(3, date1);
+            pstmt.setDate(5, date1);
 
-            pstmt.setString(4, priority);
-            pstmt.setInt(5, project_id);
+            pstmt.setString(6, priority);
+            pstmt.setDouble(7, project_id);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
