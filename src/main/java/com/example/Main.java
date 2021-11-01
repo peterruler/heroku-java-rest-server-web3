@@ -449,17 +449,19 @@ public class Main {
     /**
      * UPDATE Issue
      */
-    @CrossOrigin(maxAge = 3600)
+    @CrossOrigin
     @RequestMapping(
-            value = "/api/project/{project_id}/issues/{id}",
+            value = "/api/projects/{project_id}/issues/{id}",
             produces = "application/json",
-            method = {RequestMethod.PUT})
+            method = {RequestMethod.PUT, RequestMethod.OPTIONS})
     List<Issue> updateIssue(@PathVariable int project_id, @PathVariable int id,@RequestBody Map<String, Object> issue_param) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
         String client_id = (String) issue_param.get("client_id");
-        String done2 = (String) issue_param.get("done");
-        Boolean done = ("true".equals(done2)) ? true : false;
+
+        //String done2 = (String) issue_param.get("done");
+        //Boolean done = ("true".equals(done2)) ? true : false;
+        Boolean done = (Boolean) issue_param.get("done");
         String title = (String) issue_param.get("title");
         String due_date = (String) issue_param.get("due_date");
         String priority = (String) issue_param.get("priority");
@@ -469,7 +471,9 @@ public class Main {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
             pstmt.setString(1, client_id);
             pstmt.setDouble(2, project_id);
+
             pstmt.setBoolean(3, done);
+
             pstmt.setString(4, title);
             java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
             java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
@@ -499,9 +503,9 @@ public class Main {
     /**
      * DELETE Issue
      */
-    @CrossOrigin(maxAge = 3600)
+    @CrossOrigin
     @RequestMapping(
-            value = "/api/project/{project_id}/issues/{id}",
+            value = "/api/projects/{project_id}/issues/{id}",
             produces = "application/json",
             method = {RequestMethod.DELETE})
     boolean deleteIssue(@PathVariable int project_id, @PathVariable int id) throws Exception {
@@ -552,7 +556,7 @@ public class Main {
                 Issue issue = new Issue();
                 issue.setId(id2);
                 issue.setClient_id(client_id);
-                issue.setProject_id(Integer.parseInt(project_id2));
+                issue.setProject_id(project_id);
                 issue.setDone(done);
                 issue.setTitle(title);
                 issue.setDue_date(due_date);
