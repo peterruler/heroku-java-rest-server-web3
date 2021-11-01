@@ -39,6 +39,7 @@ public class Main {
     class Project {
         private double id;
         private String client_id;
+        private String project_id;
         private String title;
         private Object active;
 
@@ -56,6 +57,14 @@ public class Main {
 
         public void setClient_id(String client_id) {
             this.client_id = client_id;
+        }
+
+        public String getProject_id() {
+            return project_id;
+        }
+
+        public void setProject_id(String project_id) {
+            this.project_id = project_id;
         }
 
         public String getTitle() {
@@ -236,7 +245,7 @@ public class Main {
      */
     @CrossOrigin(maxAge = 3600)
     @PostMapping("/api/projects")
-    List addProject(@RequestBody Map<String, Object> project) throws Exception {
+    String addProject(@RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Project> output = new ArrayList<Project>();
 
         String client_id = (String) project.get("client_id");
@@ -251,21 +260,25 @@ public class Main {
             pstmt.setBoolean(3, (Boolean) active);
             ResultSet rs = pstmt.executeQuery();
             rs.next();
+            int id = rs.getInt(1);
             Project proj = new Project();
-            proj.setId(rs.getInt(1));
+            proj.setId(id);
             proj.setClient_id(client_id);
+            proj.setProject_id(client_id);
             proj.setTitle(title);
             proj.setActive((Boolean) active);
-            output.add(proj);
+            System.out.println("POST: id=" + id + "project_id:" + client_id);
+            return proj.toString();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return output;
+        return "{\"message\":\"error\"}";
     }
 
     /**
      * READ Project BY ID
      */
+    /*
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/projects/{id}",
@@ -299,7 +312,7 @@ public class Main {
         }
         return "{\"message\":\"error\"}";
     }
-
+    */
     /**
      * READ ALL Projects
      */
@@ -338,24 +351,23 @@ public class Main {
      * CREATE ISSUE
      */
     @CrossOrigin(maxAge = 3600)
-    @PostMapping("/api/project/{project_id}/issues")
-    List createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
+    @PostMapping("/api/projects/{project_id}/issues")
+    String createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
-        Double id = (Double) project.get("id");
         String client_id = (String) project.get("client_id");
 
         //if "done":"true" in json instead of "done": true
-        String done2 = (String) project.get("done");
-        Boolean done = ("true".equals(done2)) ? true : false;
+        //String done2 = (String) project.get("done");
+        //Boolean done = ("true".equals(done2)) ? true : false;
 
         //"done":true
-        //Boolean done = (Boolean) project.get("done");
+        Boolean done = (Boolean) project.get("done");
         String title = (String) project.get("title");
         String due_date = (String) project.get("due_date");
         String priority = (String) project.get("priority");
 
-        String postSql = "INSERT INTO Issue (client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?)";
+        String postSql = "INSERT INTO Issue (client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?) RETURNING id";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
             pstmt.setString(1, client_id);
@@ -369,9 +381,9 @@ public class Main {
             pstmt.setString(6, priority);
             ResultSet rs = pstmt.executeQuery();
             rs.next();
-
+            int id = rs.getInt(1);
             Issue issue = new Issue();
-            issue.setId(rs.getInt(1));
+            issue.setId(id);
             issue.setClient_id(client_id);
             issue.setProject_id(project_id);
             issue.setDone((Boolean) done);
@@ -382,19 +394,20 @@ public class Main {
 
             issue.setPriority(priority);
 
-            output.add(issue);
+            return issue.toString();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return output;
+        return "{\"message\":\"error\"}";
     }
 
     /**
      * GET Issue
      */
+    /*
     @CrossOrigin(maxAge = 3600)
     @RequestMapping(
-            value = "/api/project/{project_id}/issues",
+            value = "/api/projects/{project_id}/issues",
             method = {RequestMethod.GET})
     public String getIssueById(@PathVariable int project_id) {
 
@@ -432,7 +445,7 @@ public class Main {
         }
         return "{\"message\":\"error\"}";
     }
-
+    */
     /**
      * UPDATE Issue
      */
@@ -510,34 +523,36 @@ public class Main {
      * READ ALL Issues
      */
     @CrossOrigin(maxAge = 3600)
-    @GetMapping("/api/projects/issues")
-    List getAllIssues(Map<String, Object> model) {
+    @GetMapping("/api/projects/{project_id}")
+    List getProjectById(@PathVariable int project_id, Map<String, Object> model) {
         ArrayList<Issue> output = new ArrayList<Issue>();
         try (Connection connection = dataSource.getConnection()) {
-            Statement pstmt = connection.createStatement();
-            ResultSet rs = pstmt.executeQuery("SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue");
-
+            String sql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
+            PreparedStatement pstmt = connection.prepareStatement(sql);
+            pstmt.setInt(1, project_id);
+            ResultSet rs = pstmt.executeQuery();
             int id2 = 0;
             String client_id = "";
-            String project_id = "0";
+            String project_id2 = "0";
             Boolean done = false;
             String title = "";
             Date due_date = null;
             String priority = "";
+
             while (rs.next()) {
                 id2 = rs.getInt("id");
                 client_id = rs.getString("client_id");
-                project_id = rs.getString("project_id");
+                project_id2 = rs.getString("project_id");
                 done = rs.getBoolean("done");
                 title = rs.getString("title");
                 due_date = rs.getDate("due_date");
                 priority = rs.getString("priority");
-                System.out.println("ROW : id=" + id2 + " client_id" + client_id + " project_id" + project_id + " title=" + title + "due_date" + due_date + "priority=" + priority);
+                System.out.println("ROW : id=" + id2 + " client_id" + client_id + " project_id" + project_id2 + " title=" + title + "due_date" + due_date + "priority=" + priority);
 
                 Issue issue = new Issue();
                 issue.setId(id2);
                 issue.setClient_id(client_id);
-                issue.setProject_id(Integer.parseInt(project_id));
+                issue.setProject_id(Integer.parseInt(project_id2));
                 issue.setDone(done);
                 issue.setTitle(title);
                 issue.setDue_date(due_date);

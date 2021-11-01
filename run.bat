@@ -6,6 +6,12 @@ REM new db name: issue-tracker-007-02
 REM set transaction read write;
 REM INSERT INTO Project VALUES (1,123,'foo',true)
 REM http://localhost:5000/api/projects, POST, GET
+
+
+REM https://ps007server.herokuapp.com/api/projects
+REM {"client_id": "2222","title": "foobar","active": false}
+
+
 REM Post: http://localhost:5000/api/project/2222/issues
 REM {"id": 2,"client_id": "2222","project_id": "2222","done": false,"title": "Bar","due_date":"2020-01-01","priority":"1"}
 
