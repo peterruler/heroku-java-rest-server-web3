@@ -166,7 +166,8 @@ public class Main {
 
     @RequestMapping("/")
     String index() {
-        return "POST JSON: /api/projects & GET: /api/projects/{id} & PUT JSON: /api/projects & GET: /api/projects";
+        return "POST JSON: /api/projects & GET: /api/projects/{id} & PUT JSON: /api/projects & GET: /api/projects"+
+                "POST Issue: /api/project/{project_id}/issues , GET Issue: /api/project/{project_id}/issues, UPDATE Issue: /api/project/{project_id}/issues/{id}, DELETE Issue /api/projects/2222|<project_id>/issues/2|<id>, READ ALL Issues: /api/projects/issues";
     }
 
     /**
@@ -336,10 +337,11 @@ public class Main {
     List createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
-        Double id = Double.parseDouble((String) project.get("id"));
+        Double id = (Double) project.get("id");
         String client_id = (String) project.get("client_id");
-        String done2 = (String) project.get("done");
-        Boolean done = ("true".equals(done2)) ? true : false;
+        //String done2 = (String) project.get("done");
+        //Boolean done = ("true".equals(done2)) ? true : false;
+        Boolean done = (Boolean) project.get("done");
         String title = (String) project.get("title");
         String due_date = (String) project.get("due_date");
         String priority = (String) project.get("priority");
@@ -426,10 +428,10 @@ public class Main {
      */
 
     @RequestMapping(
-            value = "/api/project/{project_id}/issues",
+            value = "/api/project/{project_id}/issues/{id}",
             produces = "application/json",
             method = {RequestMethod.PUT})
-    List<Issue> updateIssue(@PathVariable int project_id, @RequestBody Map<String, Object> issue_param) throws Exception {
+    List<Issue> updateIssue(@PathVariable int project_id, @PathVariable int id,@RequestBody Map<String, Object> issue_param) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
 
         String client_id = (String) issue_param.get("client_id");
@@ -439,7 +441,7 @@ public class Main {
         String due_date = (String) issue_param.get("due_date");
         String priority = (String) issue_param.get("priority");
 
-        String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=?";
+        String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=? AND id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
             pstmt.setString(1, client_id);
@@ -452,6 +454,7 @@ public class Main {
 
             pstmt.setString(6, priority);
             pstmt.setDouble(7, project_id);
+            pstmt.setDouble(8, id);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -470,6 +473,71 @@ public class Main {
         return output;
     }
 
+    /**
+     * DELETE Issue
+     */
+    @RequestMapping(
+            value = "/api/projects/{project_id}/issues/{id}",
+            produces = "application/json",
+            method = {RequestMethod.DELETE})
+    boolean deleteIssue(@PathVariable int project_id, @PathVariable int id) throws Exception {
+
+        String deleteSql = "DELETE FROM Issue WHERE project_id=?";
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement pstmt = connection.prepareStatement(deleteSql);
+            pstmt.setDouble(1, project_id);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return false;
+    }
+
+
+    /**
+     * READ ALL Issues
+     */
+    @GetMapping("/api/projects/issues")
+    List getAllIssues(Map<String, Object> model) {
+        ArrayList<Issue> output = new ArrayList<Issue>();
+        try (Connection connection = dataSource.getConnection()) {
+            Statement pstmt = connection.createStatement();
+            ResultSet rs = pstmt.executeQuery("SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue");
+
+            int id2 = 0;
+            String client_id = "";
+            String project_id = "0";
+            Boolean done = false;
+            String title = "";
+            Date due_date = null;
+            String priority = "";
+            while (rs.next()) {
+                id2 = rs.getInt("id");
+                client_id = rs.getString("client_id");
+                project_id = rs.getString("project_id");
+                done = rs.getBoolean("done");
+                title = rs.getString("title");
+                due_date = rs.getDate("due_date");
+                priority = rs.getString("priority");
+                System.out.println("ROW : id=" + id2 + " client_id" + client_id + " project_id" + project_id + " title=" + title + "due_date" + due_date + "priority=" + priority);
+
+                Issue issue = new Issue();
+                issue.setId(id2);
+                issue.setClient_id(client_id);
+                issue.setProject_id(Integer.parseInt(project_id));
+                issue.setDone(done);
+                issue.setTitle(title);
+                issue.setDue_date(due_date);
+                issue.setPriority(priority);
+                output.add(issue);
+            }
+            return output;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return output;
+    }
 
     @Bean
     public DataSource dataSource() throws SQLException {
