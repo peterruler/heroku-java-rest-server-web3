@@ -163,7 +163,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         SpringApplication.run(Main.class, args);
     }
-
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping("/")
     String index() {
         return "POST JSON: /api/projects & GET: /api/projects/{id} & PUT JSON: /api/projects & GET: /api/projects"+
@@ -177,6 +177,7 @@ public class Main {
     /**
      * DELETE Project
      */
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/projects/{id}",
             produces = "application/json",
@@ -198,6 +199,7 @@ public class Main {
     /**
      * UPDATE Project
      */
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/projects/{id}",
             produces = "application/json",
@@ -232,6 +234,7 @@ public class Main {
     /**
      * CREATE Project
      */
+    @CrossOrigin(maxAge = 3600)
     @PostMapping("/api/projects")
     List addProject(@RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Project> output = new ArrayList<Project>();
@@ -264,6 +267,7 @@ public class Main {
     /**
      * READ Project BY ID
      */
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/projects/{id}",
             method = {RequestMethod.GET})
@@ -300,6 +304,7 @@ public class Main {
     /**
      * READ ALL Projects
      */
+    @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects")
     List getAllProjects(Map<String, Object> model) {
         ArrayList<Project> output = new ArrayList<Project>();
@@ -333,6 +338,7 @@ public class Main {
     /**
      * CREATE ISSUE
      */
+    @CrossOrigin(maxAge = 3600)
     @PostMapping("/api/project/{project_id}/issues")
     List createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
@@ -382,7 +388,7 @@ public class Main {
     /**
      * GET Issue
      */
-
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/project/{project_id}/issues",
             method = {RequestMethod.GET})
@@ -426,7 +432,7 @@ public class Main {
     /**
      * UPDATE Issue
      */
-
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/project/{project_id}/issues/{id}",
             produces = "application/json",
@@ -476,6 +482,7 @@ public class Main {
     /**
      * DELETE Issue
      */
+    @CrossOrigin(maxAge = 3600)
     @RequestMapping(
             value = "/api/projects/{project_id}/issues/{id}",
             produces = "application/json",
@@ -498,6 +505,7 @@ public class Main {
     /**
      * READ ALL Issues
      */
+    @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects/issues")
     List getAllIssues(Map<String, Object> model) {
         ArrayList<Issue> output = new ArrayList<Issue>();
