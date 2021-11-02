@@ -411,6 +411,7 @@ public class Main {
             String sql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
             PreparedStatement pstmt = connection.prepareStatement(sql);
             pstmt.setInt(1, project_id);
+            System.out.println("DEBUG : project_id=" + project_id);
             ResultSet rs = pstmt.executeQuery();
             int id2 = 0;
             String client_id = "";
