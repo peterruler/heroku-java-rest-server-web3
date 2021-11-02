@@ -30,5 +30,9 @@ REM 	title VARCHAR ( 255 ) NOT NULL,
 REM 	due_date date NOT NULL,
 REM 	priority VARCHAR(5) NOT NULL
 REM );
+REM see _Project/schema.sql
 
+REM http://keepitnative.herokuapp.com/
+REM var HEROKU_API_URI = "http://zhaw-issue-tracker-api.herokuapp.com/api/", MIN_ID = 10800;
+REM NEW: var HEROKU_API_URI = "https://ps007server.herokuapp.com/api/", MIN_ID = 10800;
 
