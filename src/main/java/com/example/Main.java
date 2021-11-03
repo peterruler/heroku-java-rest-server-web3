@@ -39,13 +39,13 @@ import java.util.Map;
 public class Main {
 
     class Project {
-        private double id;
+        private int id;
         private String client_id;
         private String project_id;
         private String title;
         private Object active;
 
-        public void setId(double id) {
+        public void setId(int id) {
             this.id = id;
         }
 
@@ -80,7 +80,7 @@ public class Main {
     }
 
     class Issue {
-        private double id;
+        private int id;
         private String client_id;
         private int project_id;
         private Boolean done;
@@ -88,7 +88,7 @@ public class Main {
         private Date due_date;
         private String priority;
 
-        public void setId(double id) {
+        public void setId(int id) {
             this.id = id;
         }
 
@@ -118,7 +118,18 @@ public class Main {
 
         @Override
         public String toString() {
-            return "{\"id\":\"" + id + "\",\"client_id\":\"" + client_id + "\",\"project_id\":\"" + project_id + "\",\"done\":\"" + done + "\",\"due_date\":\"" + due_date + "\",\"title\":\"" + title + "\",\"priority\":\"" + priority + "\"}";
+            String jsonString = new JSONObject()
+                    .put("id", id)
+                    .put("client_id", client_id)
+                    .put("project_id", project_id)
+                    .put("done", done)
+                    .put("due_date", due_date)
+                    .put("title", title)
+                    .put("priority", priority)
+                    .toString();
+
+            System.out.println(jsonString);
+            return jsonString;
         }
     }
 
