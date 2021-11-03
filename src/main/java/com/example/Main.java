@@ -248,10 +248,12 @@ public class Main {
     String getAllProjects(Map<String, Object> model) {
         ArrayList<String> output = new ArrayList<String>();
         ObjectMapper objectMapper = new ObjectMapper();
-        String json = "[";
+        String json = "";
         try (Connection connection = dataSource.getConnection()) {
+            int counter = 0;
             Statement stmt = connection.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project;");
+            json = "[";
             while (true) {
                 try {
                     if (!rs.next()) {
@@ -268,13 +270,18 @@ public class Main {
                 //output.add(proj.toString());
                 json += proj.toString();
                 json += ",";
+                counter++;
             }
             try {
                 //json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            return json.substring(0,json.length()-1)+"]";
+            if (counter > 0) {
+                return json.substring(0, json.length() - 1) + "]";
+            } else {
+                return "undefined";
+            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -408,7 +415,7 @@ public class Main {
             pstmt.setInt(1, project_id);
             System.out.println("Issue delete project id" + project_id);
             affectedrows = pstmt.executeUpdate();
-            if(affectedrows > 0) {
+            if (affectedrows > 0) {
                 System.out.println("Issue delete success");
                 return true;
             } else {
@@ -428,7 +435,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects/{project_id}")
     String getProjectById(@PathVariable int project_id) {
-        String json = "[";
 
         try (Connection connection = dataSource.getConnection()) {
             String sql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
@@ -444,6 +450,8 @@ public class Main {
             Date due_date = null;
             String priority = "";
 
+            String json = "[";
+            int counter = 0;
             while (rs.next()) {
                 id2 = rs.getInt("id");
                 client_id = rs.getString("client_id");
@@ -464,8 +472,13 @@ public class Main {
                 issue.setPriority(priority);
                 json += issue.toString();
                 json += ",";
+                counter++;
             }
-            return json.substring(0,json.length()-1)+"]";
+            if (counter > 0) {
+                return json.substring(0, json.length() - 1) + "]";
+            } else {
+                return "undefined";
+            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
