@@ -16,8 +16,10 @@
 
 package com.example;
 
+import com.fasterxml.jackson.databind.*;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -65,7 +67,15 @@ public class Main {
 
         @Override
         public String toString() {
-            return "{\"id\":\"" + id + "\",\"client_id\":\"" + client_id + "\",\"title\":\"" + title + "\",\"active\":\"" + active + "\"}";
+            String jsonString = new JSONObject()
+                    .put("id", id)
+                    .put("client_id", client_id)
+                    .put("title", title)
+                    .put("active", active)
+                    .toString();
+
+            System.out.println(jsonString);
+            return jsonString;
         }
     }
 
@@ -222,7 +232,7 @@ public class Main {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return "{\"message\":\"error\"}";
+        return "undefined";
     }
 
     /**
@@ -235,14 +245,18 @@ public class Main {
      */
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects")
-    List getAllProjects(Map<String, Object> model) {
-        ArrayList<Project> output = new ArrayList<Project>();
+    String getAllProjects(Map<String, Object> model) {
+        ArrayList<String> output = new ArrayList<String>();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String json = "[";
         try (Connection connection = dataSource.getConnection()) {
             Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project");
+            ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project;");
             while (true) {
                 try {
-                    if (!rs.next()) break;
+                    if (!rs.next()) {
+                        break;
+                    }
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
@@ -251,13 +265,20 @@ public class Main {
                 proj.setClient_id(rs.getString("client_id"));
                 proj.setTitle(rs.getString("title"));
                 proj.setActive(rs.getBoolean("active"));
-                output.add(proj);
-                model.put("records", output);
+                //output.add(proj.toString());
+                json += proj.toString();
+                json += ",";
             }
+            try {
+                //json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            return json.substring(0,json.length()-1)+"]";
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return output;
+        return "undefined";
     }
 
     /**
@@ -315,7 +336,7 @@ public class Main {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return "{\"message\":\"error\"}";
+        return "undefined";
     }
 
     /**
@@ -331,13 +352,8 @@ public class Main {
             value = "/api/projects/{project_id}/issues/{id}",
             produces = "application/json",
             method = {RequestMethod.PUT, RequestMethod.OPTIONS})
-    List<Issue> updateIssue(@PathVariable int project_id, @PathVariable int id, @RequestBody Map<String, Object> issue_param) throws Exception {
-        ArrayList<Issue> output = new ArrayList<Issue>();
-
+    String updateIssue(@PathVariable int project_id, @PathVariable int id, @RequestBody Map<String, Object> issue_param) throws Exception {
         String client_id = (String) issue_param.get("client_id");
-
-        //String done2 = (String) issue_param.get("done");
-        //Boolean done = ("true".equals(done2)) ? true : false;
         Boolean done = (Boolean) issue_param.get("done");
         String title = (String) issue_param.get("title");
         String due_date = (String) issue_param.get("due_date");
@@ -355,13 +371,13 @@ public class Main {
             java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
             java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
             pstmt.setDate(5, date1);
-
             pstmt.setString(6, priority);
             pstmt.setDouble(7, project_id);
             pstmt.setDouble(8, id);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            return "undefined";
         }
         Issue issue = new Issue();
         issue.setClient_id(client_id);
@@ -371,10 +387,8 @@ public class Main {
         java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
         java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
         issue.setDue_date(date1);
-
         issue.setPriority(priority);
-        output.add(issue);
-        return output;
+        return issue.toString();
     }
 
     /**
@@ -385,14 +399,22 @@ public class Main {
             value = "/api/projects/{project_id}/issues/{id}",
             produces = "application/json",
             method = {RequestMethod.DELETE})
-    boolean deleteIssue(@PathVariable int project_id, @PathVariable int id) throws Exception {
+    boolean deleteIssue(@PathVariable int id, @PathVariable int project_id) throws Exception {
 
         String deleteSql = "DELETE FROM Issue WHERE project_id=?";
+        int affectedrows = 0;
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(deleteSql);
-            pstmt.setDouble(1, project_id);
-            pstmt.executeUpdate();
-            return true;
+            pstmt.setInt(1, project_id);
+            System.out.println("Issue delete project id" + project_id);
+            affectedrows = pstmt.executeUpdate();
+            if(affectedrows > 0) {
+                System.out.println("Issue delete success");
+                return true;
+            } else {
+                System.out.println("Issue delete fail");
+                return false;
+            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -405,8 +427,9 @@ public class Main {
      */
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects/{project_id}")
-    List getProjectById(@PathVariable int project_id, Map<String, Object> model) {
-        ArrayList<Issue> output = new ArrayList<Issue>();
+    String getProjectById(@PathVariable int project_id) {
+        String json = "[";
+
         try (Connection connection = dataSource.getConnection()) {
             String sql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
             PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -439,13 +462,14 @@ public class Main {
                 issue.setTitle(title);
                 issue.setDue_date(due_date);
                 issue.setPriority(priority);
-                output.add(issue);
+                json += issue.toString();
+                json += ",";
             }
-            return output;
+            return json.substring(0,json.length()-1)+"]";
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        return output;
+        return "undefined";
     }
 
     @Bean

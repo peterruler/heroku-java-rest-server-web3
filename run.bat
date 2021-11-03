@@ -1,6 +1,7 @@
 REM heroku local web
 
 REM heroku addons:rename postgresql-round-48057 issue-tracker-007-02
+REM  CREATE ROLE postgres2 PASSWORD 'fu$bart$.78' CREATEDB CREATEROLE INHERIT LOGIN;
 
 REM git push heroku HEAD:main
 
