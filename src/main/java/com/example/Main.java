@@ -523,7 +523,7 @@ public class Main {
             if (counter > 0) {
                 return json.substring(0, json.length() - 1) + "]";
             } else {
-                return "undefined";
+                return project_id+"undefined";
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
