@@ -496,7 +496,7 @@ public class Main {
             String json = "[";
             int counter = 0;
 
-            String readProjSql = "SELECT id, client_id, title, active FROM Project WHERE project_id=?;";
+            String readProjSql = "SELECT id, client_id, title, active FROM Project WHERE id=?;";
             PreparedStatement pstmtProject = connection.prepareStatement(readProjSql);
 
             while (rs.next()) {
