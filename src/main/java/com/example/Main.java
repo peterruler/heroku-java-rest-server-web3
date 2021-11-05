@@ -510,10 +510,10 @@ public class Main {
                 System.out.println("ROW : id=" + id + " client_id" + client_id + " project_id" + project_id2 + " title=" + title + "due_date" + due_date + "priority=" + priority);
 
                 //read project_client_id
-                ResultSet rsProject = pstmt.executeQuery();
                 pstmtProject.setInt(1, project_id);
+                ResultSet rsProject = pstmtProject.executeQuery();
                 rsProject.next();
-                project_client_id = rsProject.getString(client_id);
+                project_client_id = rsProject.getString("client_id");
 
                 Issue issue = new Issue(id, client_id, project_id, done, title, due_date, priority, project_client_id);
                 json += issue.toString();
