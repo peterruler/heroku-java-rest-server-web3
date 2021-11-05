@@ -16,7 +16,6 @@
 
 package com.example;
 
-import com.fasterxml.jackson.databind.*;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.json.JSONObject;
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.bind.annotation.*;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -214,7 +212,7 @@ public class Main {
     @RequestMapping("/")
     String index() {
         return "POST JSON: /api/projects & GET: /api/projects/{id} & PUT JSON: /api/projects & GET: /api/projects" +
-                "POST Issue: /api/project/{project_id}/issues , GET Issue: /api/project/{project_id}/issues, UPDATE Issue: /api/project/{project_id}/issues/{id}, DELETE Issue /api/projects/2222|<project_id>/issues/2|<id>, READ ALL Issues: /api/projects/issues";
+                "POST Issue: /api/project/{project_id}/issues , GET Issue: /api/project/{project_id}/issues, UPDATE Issue: /api/project/{project_id}/issues/{id}, DELETE Issue /api/projects/<project_id>/issues/<id>, READ Issue per Project: GET /api/projects/<int project_id>";
     }
 
     /**
@@ -316,8 +314,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects")
     String getAllProjects(Map<String, Object> model) {
-        ArrayList<String> output = new ArrayList<String>();
-        ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
         try (Connection connection = dataSource.getConnection()) {
             int counter = 0;
@@ -334,7 +330,7 @@ public class Main {
                 }
                 int id = rs.getInt("id");
                 String client_id = rs.getString("client_id");
-                String  title = rs.getString("title");
+                String title = rs.getString("title");
                 Boolean active = rs.getBoolean("active");
                 Project projectObj = new Project(id, client_id, title, (Boolean) active);
                 json += projectObj.toString();
@@ -362,7 +358,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @PostMapping("/api/projects/{project_id}/issues")
     String createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
-        ArrayList<Issue> output = new ArrayList<Issue>();
         String client_id = (String) project.get("client_id");
         Boolean done = (Boolean) project.get("done");
         String title = (String) project.get("title");
@@ -449,7 +444,6 @@ public class Main {
             produces = "application/json",
             method = {RequestMethod.DELETE})
     boolean deleteIssue(@PathVariable int id, @PathVariable int project_id) throws Exception {
-
         String deleteSql = "DELETE FROM Issue WHERE project_id=?";
         int affectedrows = 0;
         try (Connection connection = dataSource.getConnection()) {
@@ -477,7 +471,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects/{project_id}")
     String getProjectById(@PathVariable int project_id) {
-
         try (Connection connection = dataSource.getConnection()) {
             String sql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
             PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -496,7 +489,7 @@ public class Main {
             String json = "[";
             int counter = 0;
 
-            String readProjSql = "SELECT id, client_id, title, active FROM Project WHERE project_id=?;";
+            String readProjSql = "SELECT id, client_id, title, active FROM Project WHERE id=?;";
             PreparedStatement pstmtProject = connection.prepareStatement(readProjSql);
 
             while (rs.next()) {
@@ -510,10 +503,10 @@ public class Main {
                 System.out.println("ROW : id=" + id + " client_id" + client_id + " project_id" + project_id2 + " title=" + title + "due_date" + due_date + "priority=" + priority);
 
                 //read project_client_id
-                ResultSet rsProject = pstmt.executeQuery();
                 pstmtProject.setInt(1, project_id);
+                ResultSet rsProject = pstmtProject.executeQuery();
                 rsProject.next();
-                project_client_id = rsProject.getString(client_id);
+                project_client_id = rsProject.getString("client_id");
 
                 Issue issue = new Issue(id, client_id, project_id, done, title, due_date, priority, project_client_id);
                 json += issue.toString();
