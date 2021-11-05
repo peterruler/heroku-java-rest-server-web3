@@ -1,7 +1,12 @@
 REM heroku local web
+
+REM heroku addons:rename postgresql-round-48057 issue-tracker-007-02
+REM  CREATE ROLE postgres2 PASSWORD 'fu$bart$.78' CREATEDB CREATEROLE INHERIT LOGIN;
+
+REM git push heroku HEAD:main
+
 REM start chrome https://localhost:5000
-REM
-start chrome https://ps007server.herokuapp.com/
+REM start chrome https://ps007server.herokuapp.com/
 REM new db name: issue-tracker-007-02
 REM set transaction read write;
 REM INSERT INTO Project VALUES (1,123,'foo',true)
@@ -10,6 +15,9 @@ REM http://localhost:5000/api/projects, POST, GET
 
 REM https://ps007server.herokuapp.com/api/projects
 REM {"client_id": "2222","title": "foobar","active": false}
+
+REM https://ps007server.herokuapp.com/api/projects/16
+
 
 REM http://localhost:5000/api/projects/3.0/issues/12
 REM Post: http://localhost:5000/api/project/2222/issues
@@ -35,4 +43,11 @@ REM see _Project/schema.sql
 REM http://keepitnative.herokuapp.com/
 REM var HEROKU_API_URI = "http://zhaw-issue-tracker-api.herokuapp.com/api/", MIN_ID = 10800;
 REM NEW: var HEROKU_API_URI = "https://ps007server.herokuapp.com/api/", MIN_ID = 10800;
+
+REM set up postgres db:
+REM https://dev.to/danielmabadeje/how-to-create-tables-on-heroku-postgresql-1n42
+REM https://dashboard.heroku.com/apps/ps007server/resources
+REM to configure DB:
+REM  heroku pg:psql postgresql-round-48057
+
 
