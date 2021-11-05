@@ -41,24 +41,42 @@ public class Main {
     class Project {
         private int id;
         private String client_id;
-        private String project_id;
         private String title;
         private Object active;
 
+        public Project(int id, String client_id, String title, Object active) {
+            this.id = id;
+            this.client_id = client_id;
+            this.title = title;
+            this.active = active;
+        }
+
+        public int getId() {
+            return id;
+        }
+
         public void setId(int id) {
             this.id = id;
+        }
+
+        public String getClient_id() {
+            return client_id;
         }
 
         public void setClient_id(String client_id) {
             this.client_id = client_id;
         }
 
-        public void setProject_id(String project_id) {
-            this.project_id = project_id;
+        public String getTitle() {
+            return title;
         }
 
         public void setTitle(String title) {
             this.title = title;
+        }
+
+        public Object getActive() {
+            return active;
         }
 
         public void setActive(Object active) {
@@ -87,33 +105,81 @@ public class Main {
         private String title;
         private Date due_date;
         private String priority;
+        private String project_client_id;
+
+        public Issue(int id, String client_id, int project_id, Boolean done, String title, Date due_date, String priority, String project_client_id) {
+            this.id = id;
+            this.client_id = client_id;
+            this.project_id = project_id;
+            this.done = done;
+            this.title = title;
+            this.due_date = due_date;
+            this.priority = priority;
+            this.project_client_id = project_client_id;
+        }
+
+        public int getId() {
+            return id;
+        }
 
         public void setId(int id) {
             this.id = id;
+        }
+
+        public String getClient_id() {
+            return client_id;
         }
 
         public void setClient_id(String client_id) {
             this.client_id = client_id;
         }
 
+        public int getProject_id() {
+            return project_id;
+        }
+
         public void setProject_id(int project_id) {
             this.project_id = project_id;
+        }
+
+        public Boolean getDone() {
+            return done;
         }
 
         public void setDone(Boolean done) {
             this.done = done;
         }
 
+        public String getTitle() {
+            return title;
+        }
+
         public void setTitle(String title) {
             this.title = title;
+        }
+
+        public Date getDue_date() {
+            return due_date;
         }
 
         public void setDue_date(Date due_date) {
             this.due_date = due_date;
         }
 
+        public String getPriority() {
+            return priority;
+        }
+
         public void setPriority(String priority) {
             this.priority = priority;
+        }
+
+        public String getProject_client_id() {
+            return project_client_id;
+        }
+
+        public void setProject_client_id(String project_client_id) {
+            this.project_client_id = project_client_id;
         }
 
         @Override
@@ -126,6 +192,7 @@ public class Main {
                     .put("due_date", due_date)
                     .put("title", title)
                     .put("priority", priority)
+                    .put("project_client_id", project_client_id)
                     .toString();
 
             System.out.println(jsonString);
@@ -202,12 +269,9 @@ public class Main {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        Project proj = new Project();
-        proj.setId(id);
-        proj.setClient_id(client_id);
-        proj.setTitle(title);
-        proj.setActive((Boolean) active);
-        output.add(proj);
+        Project projectObj = new Project(id, client_id, title, (Boolean) active);
+
+        output.add(projectObj);
         return output;
     }
 
@@ -232,14 +296,9 @@ public class Main {
             ResultSet rs = pstmt.executeQuery();
             rs.next();
             int id = rs.getInt(1);
-            Project proj = new Project();
-            proj.setId(id);
-            proj.setClient_id(client_id);
-            proj.setProject_id(client_id);
-            proj.setTitle(title);
-            proj.setActive((Boolean) active);
+            Project projectObj = new Project(id, client_id, title, (Boolean) active);
             System.out.println("POST: id=" + id + "project_id:" + client_id);
-            return proj.toString();
+            return projectObj.toString();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -273,20 +332,14 @@ public class Main {
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
-                Project proj = new Project();
-                proj.setId(rs.getInt("id"));
-                proj.setClient_id(rs.getString("client_id"));
-                proj.setTitle(rs.getString("title"));
-                proj.setActive(rs.getBoolean("active"));
-                //output.add(proj.toString());
-                json += proj.toString();
+                int id = rs.getInt("id");
+                String client_id = rs.getString("client_id");
+                String  title = rs.getString("title");
+                Boolean active = rs.getBoolean("active");
+                Project projectObj = new Project(id, client_id, title, (Boolean) active);
+                json += projectObj.toString();
                 json += ",";
                 counter++;
-            }
-            try {
-                //json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(output);
-            } catch (Exception ex) {
-                ex.printStackTrace();
             }
             if (counter > 0) {
                 return json.substring(0, json.length() - 1) + "]";
@@ -310,18 +363,12 @@ public class Main {
     @PostMapping("/api/projects/{project_id}/issues")
     String createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Issue> output = new ArrayList<Issue>();
-
         String client_id = (String) project.get("client_id");
-
-        //if "done":"true" in json instead of "done": true
-        //String done2 = (String) project.get("done");
-        //Boolean done = ("true".equals(done2)) ? true : false;
-
-        //"done":true
         Boolean done = (Boolean) project.get("done");
         String title = (String) project.get("title");
         String due_date = (String) project.get("due_date");
         String priority = (String) project.get("priority");
+        String project_client_id = (String) project.get("project_client_id");
 
         String postSql = "INSERT INTO Issue (client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?) RETURNING id";
         try (Connection connection = dataSource.getConnection()) {
@@ -331,25 +378,14 @@ public class Main {
             pstmt.setBoolean(3, done);
             pstmt.setString(4, title);
             java.util.Date utilStartDate1 = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
-            java.sql.Date date1 = new java.sql.Date(utilStartDate1.getTime());
-            pstmt.setDate(5, date1);
+            java.sql.Date due_date_sql = new java.sql.Date(utilStartDate1.getTime());
+            pstmt.setDate(5, due_date_sql);
 
             pstmt.setString(6, priority);
             ResultSet rs = pstmt.executeQuery();
             rs.next();
             int id = rs.getInt(1);
-            Issue issue = new Issue();
-            issue.setId(id);
-            issue.setClient_id(client_id);
-            issue.setProject_id(project_id);
-            issue.setDone((Boolean) done);
-            issue.setTitle(title);
-            java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
-            java.sql.Date date2 = new java.sql.Date(utilStartDate.getTime());
-            issue.setDue_date(date2);
-
-            issue.setPriority(priority);
-
+            Issue issue = new Issue(id, client_id, project_id, done, title, due_date_sql, priority, project_client_id);
             return issue.toString();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -397,15 +433,10 @@ public class Main {
             throwables.printStackTrace();
             return "undefined";
         }
-        Issue issue = new Issue();
-        issue.setClient_id(client_id);
-        issue.setProject_id(project_id);
-        issue.setDone((Boolean) done);
-        issue.setTitle(title);
         java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
-        java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
-        issue.setDue_date(date1);
-        issue.setPriority(priority);
+        java.sql.Date due_date_sql = new java.sql.Date(utilStartDate.getTime());
+        Issue issue = new Issue(id, client_id, project_id, done, title, due_date_sql, priority, "at todo");
+
         return issue.toString();
     }
 
@@ -453,34 +484,38 @@ public class Main {
             pstmt.setInt(1, project_id);
             System.out.println("DEBUG : project_id=" + project_id);
             ResultSet rs = pstmt.executeQuery();
-            int id2 = 0;
+            int id = 0;
             String client_id = "";
             String project_id2 = "0";
             Boolean done = false;
             String title = "";
             Date due_date = null;
             String priority = "";
+            String project_client_id = "";
 
             String json = "[";
             int counter = 0;
+
+            String readProjSql = "SELECT id, client_id, title, active FROM Project WHERE project_id=?;";
+            PreparedStatement pstmtProject = connection.prepareStatement(readProjSql);
+
             while (rs.next()) {
-                id2 = rs.getInt("id");
+                id = rs.getInt("id");
                 client_id = rs.getString("client_id");
                 project_id2 = rs.getString("project_id");
                 done = rs.getBoolean("done");
                 title = rs.getString("title");
                 due_date = rs.getDate("due_date");
                 priority = rs.getString("priority");
-                System.out.println("ROW : id=" + id2 + " client_id" + client_id + " project_id" + project_id2 + " title=" + title + "due_date" + due_date + "priority=" + priority);
+                System.out.println("ROW : id=" + id + " client_id" + client_id + " project_id" + project_id2 + " title=" + title + "due_date" + due_date + "priority=" + priority);
 
-                Issue issue = new Issue();
-                issue.setId(id2);
-                issue.setClient_id(client_id);
-                issue.setProject_id(project_id);
-                issue.setDone(done);
-                issue.setTitle(title);
-                issue.setDue_date(due_date);
-                issue.setPriority(priority);
+                //read project_client_id
+                ResultSet rsProject = pstmt.executeQuery();
+                pstmtProject.setInt(1, project_id);
+                rsProject.next();
+                project_client_id = rsProject.getString(client_id);
+
+                Issue issue = new Issue(id, client_id, project_id, done, title, due_date, priority, project_client_id);
                 json += issue.toString();
                 json += ",";
                 counter++;
