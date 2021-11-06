@@ -12,6 +12,10 @@
 - Better appname:
 - heroku app:rename newname
 
+# CLI ON REMOTE DB TO CREATE TABLES
+- heroku login
+- heroku pg:psql
+
 # DEPLOY & START APP
 - rename env.txt into .env with local postgres dbname, username & password
 - heroku login
