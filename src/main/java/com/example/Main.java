@@ -42,9 +42,9 @@ public class Main {
         private int id;
         private String client_id;
         private String title;
-        private Object active;
+        private boolean active;
 
-        public Project(int id, String client_id, String title, Object active) {
+        public Project(int id, String client_id, String title, boolean active) {
             this.id = id;
             this.client_id = client_id;
             this.title = title;
@@ -75,11 +75,11 @@ public class Main {
             this.title = title;
         }
 
-        public Object getActive() {
+        public boolean getActive() {
             return active;
         }
 
-        public void setActive(Object active) {
+        public void setActive(boolean active) {
             this.active = active;
         }
 
@@ -256,20 +256,20 @@ public class Main {
 
         String client_id = (String) project.get("client_id");
         String title = (String) project.get("title");
-        Object active = project.get("active");
+        boolean active = (boolean) project.get("active");
 
         String putSql = "UPDATE Project SET client_id=?, title=?, active=? WHERE id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
             pstmt.setString(1, client_id);
             pstmt.setString(2, title);
-            pstmt.setBoolean(3, (Boolean) active);
+            pstmt.setBoolean(3, active);
             pstmt.setInt(4, id);
             pstmt.executeUpdate();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        Project projectObj = new Project(id, client_id, title, (Boolean) active);
+        Project projectObj = new Project(id, client_id, title, active);
 
         output.add(projectObj);
         return output;
@@ -285,18 +285,18 @@ public class Main {
 
         String client_id = (String) project.get("client_id");
         String title = (String) project.get("title");
-        Object active = project.get("active");
+        boolean active = (boolean) project.get("active");
 
         String postSql = "INSERT INTO Project (client_id, title, active) VALUES(?,?,?) RETURNING id";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
             pstmt.setString(1, client_id);
             pstmt.setString(2, title);
-            pstmt.setBoolean(3, (Boolean) active);
+            pstmt.setBoolean(3, active);
             ResultSet rs = pstmt.executeQuery();
             rs.next();
             int id = rs.getInt(1);
-            Project projectObj = new Project(id, client_id, title, (Boolean) active);
+            Project projectObj = new Project(id, client_id, title, active);
             System.out.println("POST: id=" + id + "project_id:" + client_id);
             return projectObj.toString();
         } catch (SQLException throwables) {
@@ -335,8 +335,8 @@ public class Main {
                 int id = rs.getInt("id");
                 String client_id = rs.getString("client_id");
                 String  title = rs.getString("title");
-                Boolean active = rs.getBoolean("active");
-                Project projectObj = new Project(id, client_id, title, (Boolean) active);
+                boolean active = rs.getBoolean("active");
+                Project projectObj = new Project(id, client_id, title, active);
                 json += projectObj.toString();
                 json += ",";
                 counter++;
