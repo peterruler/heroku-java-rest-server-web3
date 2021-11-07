@@ -278,7 +278,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @PostMapping("/api/projects")
     String addProject(@RequestBody Map<String, Object> project) throws Exception {
-        ArrayList<Project> output = new ArrayList<Project>();
         String client_id = (String) project.get("client_id");
         String title = (String) project.get("title");
         boolean active = (boolean) project.get("active");
