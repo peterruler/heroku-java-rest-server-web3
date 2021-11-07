@@ -230,7 +230,6 @@ public class Main {
             produces = "application/json",
             method = {RequestMethod.DELETE})
     boolean deleteProject(@PathVariable int id) throws Exception {
-
         String deleteSql = "DELETE FROM Project WHERE id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(deleteSql);
@@ -253,11 +252,9 @@ public class Main {
             method = {RequestMethod.PUT})
     List<Project> updateProject(@PathVariable int id, @RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Project> output = new ArrayList<Project>();
-
         String client_id = (String) project.get("client_id");
         String title = (String) project.get("title");
         boolean active = (boolean) project.get("active");
-
         String putSql = "UPDATE Project SET client_id=?, title=?, active=? WHERE id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
@@ -282,11 +279,9 @@ public class Main {
     @PostMapping("/api/projects")
     String addProject(@RequestBody Map<String, Object> project) throws Exception {
         ArrayList<Project> output = new ArrayList<Project>();
-
         String client_id = (String) project.get("client_id");
         String title = (String) project.get("title");
         boolean active = (boolean) project.get("active");
-
         String postSql = "INSERT INTO Project (client_id, title, active) VALUES(?,?,?) RETURNING id";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
@@ -316,8 +311,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects")
     String getAllProjects(Map<String, Object> model) {
-        ArrayList<String> output = new ArrayList<String>();
-        ObjectMapper objectMapper = new ObjectMapper();
         String json = "";
         try (Connection connection = dataSource.getConnection()) {
             int counter = 0;
@@ -362,14 +355,12 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @PostMapping("/api/projects/{project_id}/issues")
     String createIssue(@PathVariable int project_id, @RequestBody Map<String, Object> project) throws Exception {
-        ArrayList<Issue> output = new ArrayList<Issue>();
         String client_id = (String) project.get("client_id");
         Boolean done = (Boolean) project.get("done");
         String title = (String) project.get("title");
         String due_date = (String) project.get("due_date");
         String priority = (String) project.get("priority");
         String project_client_id = (String) project.get("project_client_id");
-
         String postSql = "INSERT INTO Issue (client_id, project_id, done, title,  due_date, priority) VALUES(?,?,?,?,?,?) RETURNING id";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(postSql);
@@ -380,7 +371,6 @@ public class Main {
             java.util.Date utilStartDate1 = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
             java.sql.Date due_date_sql = new java.sql.Date(utilStartDate1.getTime());
             pstmt.setDate(5, due_date_sql);
-
             pstmt.setString(6, priority);
             ResultSet rs = pstmt.executeQuery();
             rs.next();
@@ -412,15 +402,12 @@ public class Main {
         String title = (String) issue_param.get("title");
         String due_date = (String) issue_param.get("due_date");
         String priority = (String) issue_param.get("priority");
-
         String putSql = "UPDATE Issue SET client_id=?, project_id=?, done=?, title=?, due_date=?, priority=? WHERE project_id=? AND id=?";
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(putSql);
             pstmt.setString(1, client_id);
             pstmt.setDouble(2, project_id);
-
             pstmt.setBoolean(3, done);
-
             pstmt.setString(4, title);
             java.util.Date utilStartDate = new SimpleDateFormat("yyyy-MM-dd").parse(due_date);
             java.sql.Date date1 = new java.sql.Date(utilStartDate.getTime());
@@ -449,7 +436,6 @@ public class Main {
             produces = "application/json",
             method = {RequestMethod.DELETE})
     boolean deleteIssue(@PathVariable int id, @PathVariable int project_id) throws Exception {
-
         String deleteSql = "DELETE FROM Issue WHERE project_id=?";
         int affectedrows = 0;
         try (Connection connection = dataSource.getConnection()) {
@@ -477,7 +463,6 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @GetMapping("/api/projects/{project_id}")
     String getProjectById(@PathVariable int project_id) {
-
         try (Connection connection = dataSource.getConnection()) {
             String sql = "SELECT id, client_id, project_id, done, title, due_date, priority FROM Issue WHERE project_id=?";
             PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -492,13 +477,10 @@ public class Main {
             Date due_date = null;
             String priority = "";
             String project_client_id = "";
-
             String json = "[";
             int counter = 0;
-
             String readProjSql = "SELECT id, client_id, title, active FROM Project WHERE id=?;";
             PreparedStatement pstmtProject = connection.prepareStatement(readProjSql);
-
             while (rs.next()) {
                 id = rs.getInt("id");
                 client_id = rs.getString("client_id");
@@ -508,13 +490,11 @@ public class Main {
                 due_date = rs.getDate("due_date");
                 priority = rs.getString("priority");
                 System.out.println("ROW : id=" + id + " client_id" + client_id + " project_id" + project_id2 + " title=" + title + "due_date" + due_date + "priority=" + priority);
-
                 //read project_client_id
                 pstmtProject.setInt(1, project_id);
                 ResultSet rsProject = pstmtProject.executeQuery();
                 rsProject.next();
                 project_client_id = rsProject.getString("client_id");
-
                 Issue issue = new Issue(id, client_id, project_id, done, title, due_date, priority, project_client_id);
                 json += issue.toString();
                 json += ",";
@@ -538,7 +518,6 @@ public class Main {
         } else {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(dbUrl);
-
             String un = System.getenv().get("username");
             config.setUsername(un);
             String pw = System.getenv().get("password");
