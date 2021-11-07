@@ -1,4 +1,4 @@
-# ZHAW web3 course - riotjs JAVA REST Backend
+# ZHAW web3 course - web-client frontend - JAVA REST Backend
 
 ## DB
 - set up postgres db on heroku:
