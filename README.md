@@ -1,6 +1,6 @@
 # ZHAW web3 course - riotjs JAVA REST Backend
 
-# DB
+## DB
 - set up postgres db on heroku:
 - https://dev.to/danielmabadeje/how-to-create-tables-on-heroku-postgresql-1n42
 - DB TABLE SCHEMA check <this root dir>/_Project/schema.sql
@@ -12,11 +12,15 @@
 - Better appname:
 - heroku app:rename newname
 
-# CLI ON REMOTE DB TO CREATE TABLES
+## CLI ON REMOTE DB TO CREATE TABLES
 - heroku login
 - heroku pg:psql
 
-# DEPLOY & START APP
+## Logging
+- heroku login
+- heroku logs -n 500
+
+## DEPLOY & START APP
 - rename env.txt into .env with local postgres dbname, username & password
 - heroku login
 - heroku create
@@ -33,13 +37,15 @@
 - or
 - start chrome https://localhost:5000
 
-# Actions on REST Server
+## Actions on REST Server
 - Show all Projects
 - http://localhost:5000/api/projects
 - POST a project <>/api/projects JSON Payload:
 - {"client_id": "2222","title": "foobar","active": false}
 - Post an issue: http://localhost:5000/api/project/<project_id>/issues, JSON Payload:
 - {"id": 2,"client_id": "2222","project_id": "2222","done": false,"title": "Bar","due_date":"2020-01-01","priority":"1"}
+
+# Original README from heroku java getting started (c) following
 
 # java-getting-started
 
