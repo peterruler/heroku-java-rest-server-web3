@@ -213,8 +213,12 @@ public class Main {
     @CrossOrigin(maxAge = 3600)
     @RequestMapping("/")
     String index() {
-        return "POST JSON: /api/projects & GET: /api/projects/{id} & PUT JSON: /api/projects & GET: /api/projects" +
-                "POST Issue: /api/project/{project_id}/issues , GET Issue: /api/project/{project_id}/issues, UPDATE Issue: /api/project/{project_id}/issues/{id}, DELETE Issue /api/projects/2222|<project_id>/issues/2|<id>, READ ALL Issues: /api/projects/issues";
+        return "POST Project: {base_uri}/api/projects\n<br>" +
+                "GET Projects: {base_uri}/api/projects\n<br>" +
+                "POST Issue: {base_uri}/api/projects/{project_id}/issues\n<br>" +
+                "GET Issue: {base_uri}/api/project/{project_id}/issues\n<br>" +
+                "UPDATE Issue: {base_uri}/api/projects/{project_id}/issues/{issue_id}\n<br>" +
+                "DELETE Issue: {base_uri}/api/projects/{project_id}/issues/{issue_id}";
     }
 
     /**
@@ -231,11 +235,18 @@ public class Main {
             method = {RequestMethod.DELETE})
     boolean deleteProject(@PathVariable int id) throws Exception {
         String deleteSql = "DELETE FROM Project WHERE id=?";
+        int affectedrows = 0;
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement pstmt = connection.prepareStatement(deleteSql);
             pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-            return true;
+            affectedrows = pstmt.executeUpdate();
+            if (affectedrows > 0) {
+                System.out.println("Issue delete success");
+                return true;
+            } else {
+                System.out.println("Issue delete fail");
+                return false;
+            }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -314,7 +325,7 @@ public class Main {
         try (Connection connection = dataSource.getConnection()) {
             int counter = 0;
             Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project;");
+            ResultSet rs = stmt.executeQuery("SELECT id, client_id, title, active FROM Project LIMIT 50;");
             json = "[";
             while (true) {
                 try {
@@ -326,7 +337,7 @@ public class Main {
                 }
                 int id = rs.getInt("id");
                 String client_id = rs.getString("client_id");
-                String  title = rs.getString("title");
+                String title = rs.getString("title");
                 boolean active = rs.getBoolean("active");
                 Project projectObj = new Project(id, client_id, title, active);
                 json += projectObj.toString();
