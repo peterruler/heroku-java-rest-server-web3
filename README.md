@@ -1,51 +1,120 @@
-# ZHAW web3 course - web-client frontend - JAVA REST Backend
+# ZHAW web3 - non riotjs & nodejs solution - JAVA REST Backend
+
+## Init your local app with heroku
+
+ install heroku binary first, as described step-by-step in the heroku "Getting started" manuals!
+
+ Having free heroku account do:
+
+`heroku login`
+
+ `heroku create` creates the app with a new app with new name (see the rename app section).
 
 ## DB
-- set up postgres db on heroku:
-- https://dev.to/danielmabadeje/how-to-create-tables-on-heroku-postgresql-1n42
-- DB TABLE SCHEMA check <this root dir>/_Project/schema.sql
-- to configure DB, SQL Console to add tables or use Dataclips on herokuapp.com gui instead:
-- heroku pg:psql postgresql-round-48057
-- Optional Rename DB (.env on heroku is automatically linked per app)
-- heroku addons:rename postgresql-round-48057 issue-tracker-007-02
-- https://dashboard.heroku.com/apps/<your-app-id>/resources
-- Better appname:
-- heroku app:rename newname
+ set up postgres db on heroku follow the steps in this tutorial:
+ 
+ https://dev.to/danielmabadeje/how-to-create-tables-on-heroku-postgresql-1n42
+ 
+ You will need the DB TABLE SCHEMA - check `./_Project/schema.sql`
+ 
+ To configure DB, SQL Console to add tables or use Dataclips on herokuapp.com gui instead:
+
+ `heroku pg:psql {db_name}` (sql command prompt on heroku instance, activate postgres first)
+
+ Optional Rename DB (.env on heroku is automatically linked per app)
+
+ `heroku addons:rename {old_name} {new_name}`
+
+## Rename the app instance
+
+  Change to better appname/<your-app-id>:
+
+ `heroku app:rename newname`
+
+## Postgres GUI on heroku
+
+ To get the GUI on heroku with the postgres instance (Use Dataclips etc)
+ 
+ https://dashboard.heroku.com/apps/<your-app-id>/resources
 
 ## CLI ON REMOTE DB TO CREATE TABLES
-- heroku login
-- heroku pg:psql
+ `heroku login`
+
+ `heroku pg:psql` (sql command prompt, needed to create the db tables)
 
 ## Logging
-- heroku login
-- heroku logs -n 500
+ `heroku login`
+
+ `heroku logs -n 500` (display last 500 lines)
 
 ## DEPLOY & START APP
-- rename env.txt into .env with local postgres dbname, username & password
-- heroku login
-- heroku create
-- mvn clean install
-- git add .
-- git commit -m "first commit"
-- git push
-- git push heroku HEAD:master
+ edit .env only uses to run postgres locally (needs local postgres installation):
 
-- Start app locally
-- heroku local web
-- heroku open local app:
-- heroku open
-- or
-- start chrome https://localhost:5000
+ .env needs these three content items (1.-3.)
+ 
+ 1. connection-string:
 
-## Actions on REST Server
-- Show all Projects
-- http://localhost:5000/api/projects
-- POST a project <>/api/projects JSON Payload:
-- {"client_id": "2222","title": "foobar","active": false}
-- Post an issue: http://localhost:5000/api/project/<project_id>/issues, JSON Payload:
-- {"id": 2,"client_id": "2222","project_id": "2222","done": false,"title": "Bar","due_date":"2020-01-01","priority":"1"}
+ `JDBC_DATABASE_URL=jdbc:postgresql://localhost:5432/java_database_name`
 
-# Original README from heroku java getting started (c) following
+ local credentials: 
+
+ 2. `username=...{local postgres username e.g. postgres}`
+
+ 3. `password=...{local postgres password}`
+
+## Build app (need built .jar package)
+
+`heroku login`
+
+`heroku create`
+
+`mvn clean install`
+
+## Deploy app to github.com and to heroku
+
+
+ `git add.`
+
+ `git commit -m "first commit"`
+
+ `git push`
+
+ `git push heroku HEAD:master`
+
+# Start app locally (needs postgres linked in .env file)
+
+`heroku local web`
+
+ heroku open local app:
+
+`heroku open`
+
+ or
+
+`start chrome https://localhost:5000`
+
+
+## Actions on REST Server (test with e.g. postman rest client)
+
+ Show all Projects
+
+ Get Request on:
+
+ `http://localhost:5000/api/projects`
+
+ POST a project `{server_uri}/api/projects` 
+ 
+ JSON Payload:
+
+ `{"client_id": "2222","title": "foobar","active": false}`
+
+ Post an issue: `http://localhost:5000/api/project/<project_id>/issues`
+ 
+ JSON Payload:
+ 
+`{"id": 2,"client_id": "2222","project_id": "2222","done": false,"title": "Bar","due_date":"2020-01-01","priority":"1"}`
+
+# Original README from heroku java getting started (copyright by heroku) following
 
 # java-getting-started
 
