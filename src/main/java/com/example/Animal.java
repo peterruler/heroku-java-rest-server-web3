@@ -10,6 +10,10 @@ public class Animal {
     private int offspring = 1;
     private int speed = 1;
 
+    public Animal() {
+
+    }
+
     public Animal(int id, String name, String image, double size, int weight, int age, int offspring, int speed) {
         this.id = id;
         this.name = name;

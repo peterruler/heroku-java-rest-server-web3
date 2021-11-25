@@ -69,7 +69,7 @@ public class SuperTrumpf {
     @RequestMapping(
             value = "/api/animals",
             produces = "application/json",
-            method = {RequestMethod.PUT})
+            method = {RequestMethod.PUT, RequestMethod.OPTIONS})
     public Animal updateAnimal(@RequestBody Map<String, Object> animal) throws Exception {
         Animal animalEntity = null;
         try {
