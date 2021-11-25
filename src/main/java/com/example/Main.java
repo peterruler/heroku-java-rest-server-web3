@@ -16,7 +16,6 @@
 
 package com.example;
 
-import com.fasterxml.jackson.databind.*;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.json.JSONObject;

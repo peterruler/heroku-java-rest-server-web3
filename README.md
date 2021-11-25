@@ -27,7 +27,7 @@
 
 ## Rename the app instance
 
-  Change to better appname/<your-app-id>:
+  Change to better appname/{your-app-id}:
 
  `heroku app:rename newname`
 
@@ -35,7 +35,7 @@
 
  To get the GUI on heroku with the postgres instance (Use Dataclips etc)
  
- https://dashboard.heroku.com/apps/<your-app-id>/resources
+ https://dashboard.heroku.com/apps/{your-app-id}/resources
 
 ## CLI ON REMOTE DB TO CREATE TABLES
  `heroku login`
