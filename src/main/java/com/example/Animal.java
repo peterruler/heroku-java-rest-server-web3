@@ -10,6 +10,17 @@ public class Animal {
     private int offspring = 1;
     private int speed = 1;
 
+    public Animal(int id, String name, String image, double size, int weight, int age, int offspring, int speed) {
+        this.id = id;
+        this.name = name;
+        this.image = image;
+        this.size = size;
+        this.weight = weight;
+        this.age = age;
+        this.offspring = offspring;
+        this.speed = speed;
+    }
+
     public int getId() {
         return id;
     }
