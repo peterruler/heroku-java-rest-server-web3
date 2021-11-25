@@ -96,11 +96,13 @@
 
 ## Actions on REST Server (test with e.g. postman rest client)
 
+ `{server_uri}` local = `http://localhost:5000`
+
  Show all Projects
 
  Get Request on:
 
- `http://localhost:5000/api/projects`
+ `{server_uri}/api/projects`
 
  POST a project `{server_uri}/api/projects` 
  
@@ -108,7 +110,7 @@
 
  `{"client_id": "2222","title": "foobar","active": false}`
 
- Post an issue: `http://localhost:5000/api/project/<project_id>/issues`
+ Post an issue: `{server_uri}/api/project/<project_id>/issues`
  
  JSON Payload:
  
