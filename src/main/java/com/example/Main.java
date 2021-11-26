@@ -42,7 +42,7 @@ public class Main {
         private String client_id;
         private String title;
         private boolean active;
-
+        public Project(){}
         public Project(int id, String client_id, String title, boolean active) {
             this.id = id;
             this.client_id = client_id;
@@ -106,6 +106,7 @@ public class Main {
         private String priority;
         private String project_client_id;
 
+        public Issue(){}
         public Issue(int id, String client_id, int project_id, Boolean done, String title, Date due_date, String priority, String project_client_id) {
             this.id = id;
             this.client_id = client_id;
