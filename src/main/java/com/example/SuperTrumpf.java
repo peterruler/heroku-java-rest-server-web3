@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
+
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,7 +25,8 @@ public class SuperTrumpf {
             produces = "application/json",
             method = {RequestMethod.GET}
     )
-    List<Animal> getAllAnimals() {
+
+    private List<Animal> readAnimalJson() {
         List<Animal> animalsList = null;
         try {
             byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
@@ -32,8 +34,13 @@ public class SuperTrumpf {
             animalsList = objectMapper.readValue(jsonString, new TypeReference<List<Animal>>() {
             });
         } catch (Exception e) {
-            System.out.println("Exception" + e.getStackTrace());
+            System.out.println("Exception " + e.getStackTrace());
         }
+        return animalsList;
+    }
+
+    List<Animal> getAllAnimals() {
+        List<Animal> animalsList = readAnimalJson();
         return animalsList;
     }
 
@@ -45,18 +52,13 @@ public class SuperTrumpf {
     public Animal getAnimalById(@PathVariable int id) {
         List<Animal> animalListFiltered = new ArrayList<>();
         try {
-            byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
-            jsonString = new String(bdata, StandardCharsets.UTF_8);
-            List<Animal> animalsList;
-            animalsList = objectMapper.readValue(jsonString, new TypeReference<List<Animal>>() {
-            });
+            List<Animal> animalsList = readAnimalJson();
             animalListFiltered = animalsList
                     .stream()
                     .filter(c -> c.getId() == id)
                     .collect(Collectors.toList());
-
         } catch (Exception e) {
-            System.out.println("Exception" + e.getStackTrace());
+            System.out.println("Exception " + e.getStackTrace());
         }
         if (animalListFiltered.size() > 0) {
             return animalListFiltered.get(0);
@@ -67,13 +69,12 @@ public class SuperTrumpf {
 
     @CrossOrigin
     @RequestMapping(
-            value = "/api/animals",
+            value = "/api/animals/{id}",
             produces = "application/json",
             method = {RequestMethod.PUT, RequestMethod.OPTIONS})
-    public Animal updateAnimal(@RequestBody Map<String, Object> animal) throws Exception {
+    public Animal updateAnimal(@PathVariable int id, @RequestBody Map<String, Object> animal) throws Exception {
         Animal animalEntity = null;
         try {
-            int id = (int) animal.get("id");
             String name = (String) animal.get("name");
             String image = (String) animal.get("image");
             double size = (double) animal.get("size");
@@ -83,7 +84,7 @@ public class SuperTrumpf {
             int speed = (int) animal.get("speed");
             animalEntity = new Animal(id, name, image, size, weight, age, offspring, speed);
         } catch (Exception e) {
-            System.out.println("Exception" + e.getStackTrace());
+            System.out.println("Exception " + e.getStackTrace());
         }
         return animalEntity;
     }
