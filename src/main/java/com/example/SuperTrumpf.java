@@ -14,10 +14,6 @@ import java.util.stream.Collectors;
 @SpringBootApplication
 public class SuperTrumpf {
 
-    String jsonString;
-    ObjectMapper objectMapper = new ObjectMapper();
-    ClassPathResource cpr = new ClassPathResource("../../data.json");
-
     @CrossOrigin
     @RequestMapping(
             value = "/api/animals",
@@ -28,6 +24,9 @@ public class SuperTrumpf {
     private List<Animal> readAnimalJson() {
         List<Animal> animalsList = null;
         try {
+            String jsonString;
+            ObjectMapper objectMapper = new ObjectMapper();
+            ClassPathResource cpr = new ClassPathResource("../../data.json");
             byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
             jsonString = new String(bdata, StandardCharsets.UTF_8);
             animalsList = objectMapper.readValue(jsonString, new TypeReference<List<Animal>>() {

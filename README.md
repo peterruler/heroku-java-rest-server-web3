@@ -73,7 +73,7 @@
 ## Deploy app to github.com and to heroku
 
 
- `git add.`
+ `git add .`
 
  `git commit -m "first commit"`
 
