@@ -1,4 +1,4 @@
-package com.example;
+package com.example.bean;
 
 public class Animal {
     private int id = 1;

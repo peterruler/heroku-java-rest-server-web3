@@ -1,5 +1,6 @@
-package com.example;
+package com.example.controllers;
 
+import com.example.bean.Animal;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

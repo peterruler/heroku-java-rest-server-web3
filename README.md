@@ -1,5 +1,17 @@
 # ZHAW web3 - non riotjs & nodejs solution - JAVA REST Backend
 
+## Swagger OpenApi Docu
+
+ when run locally:
+
+ http://localhost:5000/swagger-ui.html#/main
+
+ http://localhost:5000/swagger-ui.html#/super-trumpf
+
+ or on stage server installation:
+
+ https://ps007server.herokuapp.com/swagger-ui.html
+ 
 ## Init your local app with heroku
 
  install heroku binary first, as described step-by-step in the heroku "Getting started" manuals!
